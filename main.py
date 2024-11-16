@@ -47,7 +47,8 @@ coin_image_path = "coin.png"
 key_image_path = "key.png"
 oxygen_tank_path = "oxygen_tank.png"
 life_image_path = "life.png"
-treasure_chest_image_path = "treasure_chest.png"  # 보물 상자 이미지 경로
+treasure_chest_image_path = "treasure_chest.png"
+game_over_image_path = "game_over.png"  # 추가: 게임 오버 이미지 경로
 
 # 화면 전환 상태 변수
 game_mode = False  # False: 타이틀 화면, True: 게임 화면
@@ -62,6 +63,7 @@ game = Game(
     oxygen_tank_path,
     life_image_path,
     treasure_chest_image_path,
+    game_over_image_path,  # 추가: 게임 오버 이미지 경로 전달
     num_fish=6
 )
 

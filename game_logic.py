@@ -3,7 +3,7 @@ import random
 import time
 
 class Game:
-    def __init__(self, disp, cat_image_path, background_path, fish_image_path, oxygen_tank_path, life_image_path, treasure_chest_image_path, num_fish=6):
+    def __init__(self, disp, cat_image_path, background_path, fish_image_path, oxygen_tank_path, life_image_path, treasure_chest_image_path, game_over_image_path, num_fish=6):
         self.disp = disp
         self.cat_image_original = Image.open(cat_image_path).resize((50, 50))
         self.cat_image_flipped = self.cat_image_original.transpose(Image.FLIP_LEFT_RIGHT)
@@ -24,6 +24,7 @@ class Game:
         self.treasure_chest_y = self.disp.height - self.treasure_chest_image.height
         self.oxygen_tank = Image.open(oxygen_tank_path).resize((20, 20))
         self.life_image = Image.open(life_image_path).resize((20, 20))
+        self.game_over_image = Image.open(game_over_image_path).resize((self.disp.width, self.disp.height))  # 추가: 게임 오버 이미지
         self.lives = 2  # 초기 생명 설정
 
         # 고양이 및 산소 시간 초기화
@@ -176,5 +177,9 @@ class Game:
                     return "title"  # 생명 감소 후 타이틀 화면으로 돌아가도록 신호
 
     def game_over(self):
-        """게임 오버 처리"""
-        print("Game Over! 모든 생명을 소진했습니다.")
+        """게임 오버 시 game_over.png를 화면에 표시하고 종료"""
+        self.disp.image(self.game_over_image)
+
+        # 게임 종료 상태를 유지하기 위한 무한 루프
+        while True:
+            time.sleep(0.1)
