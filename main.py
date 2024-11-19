@@ -37,13 +37,13 @@ button_U = DigitalInOut(board.D17); button_U.direction = Direction.INPUT; button
 button_D = DigitalInOut(board.D22); button_D.direction = Direction.INPUT; button_D.pull = Pull.UP
 button_C = DigitalInOut(board.D4); button_C.direction = Direction.INPUT; button_C.pull = Pull.UP
 
-# 화면 전환 상태 변수 초기화
+# 상태 변수 초기화
 game_mode = False
 in_title_screen = True
 show_items = False
-is_first_run = True  # 프로그램이 처음 실행되었는지 여부
+is_first_run = True
 
-# 이미지 파일 경로
+# 이미지 경로
 title_image_path = "background_title.png"
 start_button_path = "start_button.png"
 game_image_path = "background_game.png"
@@ -69,7 +69,7 @@ game = Game(
     num_fish=6
 )
 
-# 초기 타이틀 화면 표시 (첫 실행에서는 게임 시작 버튼 포함)
+# 초기 화면 표시
 if is_first_run:
     display_title_with_button(disp, title_image_path, start_button_path)
 else:
@@ -84,12 +84,12 @@ while True:
 
     # 타이틀 화면 처리
     if in_title_screen:
-        if not button_B.value:  # B 버튼을 눌렀을 때만 게임 시작
+        if not button_B.value:  # B 버튼으로 게임 시작
             game_mode = True
             in_title_screen = False
             show_items = False
-            is_first_run = False  # 첫 실행 후 플래그를 False로 변경
-            game.reset_cat_position()
+            is_first_run = False
+            game.reset_cat_position()  # 게임 시작 시 고양이 위치 초기화 (1일 추가는 이곳에서만 발생)
             game.display_game_screen()
             time.sleep(0.5)  # 중복 입력 방지
         continue
@@ -106,14 +106,19 @@ while True:
         elif not button_D.value:
             game.move_cat(0, 10)
 
-        # 물고기 위치 업데이트
+        # 작살 발사
+        if not button_A.value:  # A 버튼으로 작살 발사
+            game.fire_spear()
+
+        # 물고기 및 작살 업데이트
         if current_time - last_fish_update >= 0.1:
             game.update_fish_positions()
+            game.update_spear()
             last_fish_update = current_time
 
         # 산소 시간 업데이트
         result = game.update_oxygen_time()
-        if result == "title":  # 산소가 소진되면 타이틀 화면으로 전환
+        if result == "title":  # 산소가 다 떨어지면 타이틀 화면으로
             game_mode = False
             in_title_screen = True
             show_items = True
@@ -121,7 +126,7 @@ while True:
             time.sleep(0.5)
             continue
 
-        # 고양이가 최상단에 도달했을 때 타이틀 화면으로 전환
+        # 고양이가 최상단에 도달하면 타이틀 화면으로
         if game.cat_reached_top():
             game_mode = False
             in_title_screen = True
