@@ -37,6 +37,12 @@ button_U = DigitalInOut(board.D17); button_U.direction = Direction.INPUT; button
 button_D = DigitalInOut(board.D22); button_D.direction = Direction.INPUT; button_D.pull = Pull.UP
 button_C = DigitalInOut(board.D4); button_C.direction = Direction.INPUT; button_C.pull = Pull.UP
 
+# 화면 전환 상태 변수 초기화
+game_mode = False
+in_title_screen = True
+show_items = False
+is_first_run = True  # 프로그램이 처음 실행되었는지 여부
+
 # 이미지 파일 경로
 title_image_path = "background_title.png"
 start_button_path = "start_button.png"
@@ -48,13 +54,9 @@ key_image_path = "key.png"
 oxygen_tank_path = "oxygen_tank.png"
 life_image_path = "life.png"
 treasure_chest_image_path = "treasure_chest.png"
-game_over_image_path = "game_over.png"  # 추가: 게임 오버 이미지 경로
+game_over_image_path = "game_over.png"
 
-# 화면 전환 상태 변수
-game_mode = False  # False: 타이틀 화면, True: 게임 화면
-show_items = False  # 타이틀 화면에서 아이템을 표시할지 여부
-
-# Game 객체 생성 (물고기 6마리 설정)
+# Game 객체 생성
 game = Game(
     disp,
     cat_image_path,
@@ -63,48 +65,74 @@ game = Game(
     oxygen_tank_path,
     life_image_path,
     treasure_chest_image_path,
-    game_over_image_path,  # 추가: 게임 오버 이미지 경로 전달
+    game_over_image_path,
     num_fish=6
 )
 
-# 초기 화면 (타이틀 화면) 표시
-display_title_with_button(disp, title_image_path, start_button_path)
+# 초기 타이틀 화면 표시 (첫 실행에서는 게임 시작 버튼 포함)
+if is_first_run:
+    display_title_with_button(disp, title_image_path, start_button_path)
+else:
+    display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items)
 
 # 메인 루프
+last_fish_update = time.time()
+last_screen_update = time.time()
+
 while True:
-    # 타이틀 화면에서 B 버튼이 눌리면 게임 모드로 전환
-    if not game_mode and not button_B.value:
-        game_mode = True
-        show_items = False  # 초기화면에서 아이템이 보이지 않음
-        game.reset_cat_position()  # 고양이 위치 초기화
-        game.display_game_screen()  # 게임 화면 표시
-        time.sleep(0.5)  # 중복 반응 방지
+    current_time = time.time()
 
-    # 게임 모드일 때 고양이 이동 처리
+    # 타이틀 화면 처리
+    if in_title_screen:
+        if not button_B.value:  # B 버튼을 눌렀을 때만 게임 시작
+            game_mode = True
+            in_title_screen = False
+            show_items = False
+            is_first_run = False  # 첫 실행 후 플래그를 False로 변경
+            game.reset_cat_position()
+            game.display_game_screen()
+            time.sleep(0.5)  # 중복 입력 방지
+        continue
+
+    # 게임 모드 처리
     if game_mode:
+        # 고양이 이동 처리
         if not button_L.value:
-            game.move_cat(-10, 0)  # 왼쪽으로 이동
+            game.move_cat(-10, 0)
         elif not button_R.value:
-            game.move_cat(10, 0)   # 오른쪽으로 이동
+            game.move_cat(10, 0)
         elif not button_U.value:
-            game.move_cat(0, -10)  # 위로 이동
+            game.move_cat(0, -10)
         elif not button_D.value:
-            game.move_cat(0, 10)   # 아래로 이동
+            game.move_cat(0, 10)
 
-        # 산소 카운트다운 업데이트 및 화면 전환
+        # 물고기 위치 업데이트
+        if current_time - last_fish_update >= 0.1:
+            game.update_fish_positions()
+            last_fish_update = current_time
+
+        # 산소 시간 업데이트
         result = game.update_oxygen_time()
-        if result == "title":  # 산소가 모두 소진되어 타이틀 화면으로 전환
+        if result == "title":  # 산소가 소진되면 타이틀 화면으로 전환
             game_mode = False
-            show_items = True  # 물 위로 올라온 후의 타이틀 화면에서 아이템 표시
+            in_title_screen = True
+            show_items = True
             display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items)
             time.sleep(0.5)
+            continue
 
-        # 고양이가 최상단에 닿았을 때 타이틀 화면으로 전환
+        # 고양이가 최상단에 도달했을 때 타이틀 화면으로 전환
         if game.cat_reached_top():
             game_mode = False
-            show_items = True  # 물 위로 올라온 후의 타이틀 화면에서 아이템 표시
+            in_title_screen = True
+            show_items = True
             display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items)
             time.sleep(0.5)
+            continue
 
-    # 짧은 딜레이로 반복
-    time.sleep(0.1)
+        # 게임 화면 업데이트
+        if current_time - last_screen_update >= 0.05:
+            game.display_game_screen()
+            last_screen_update = current_time
+
+    time.sleep(0.01)  # 짧은 딜레이

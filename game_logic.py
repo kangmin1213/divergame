@@ -106,7 +106,7 @@ class Game:
     def display_game_screen(self):
         """게임 화면을 업데이트하여 물고기 위치와 움직임을 반영"""
         screen = self.background.copy()
-        
+
         # 물고기 위치 업데이트 및 반전 표시
         for i, (x, y) in enumerate(self.fish_positions):
             if self.fish_directions[i] == "left":
@@ -119,7 +119,12 @@ class Game:
         screen.paste(self.cat_image, (self.cat_x, self.cat_y), self.cat_image)
         self.display_day_and_oxygen(screen)
         self.display_lives(screen)
-        self.disp.image(screen)
+
+        # 디스플레이와 호환되도록 변환
+        screen = screen.resize((self.disp.width, self.disp.height))  # 크기 조정
+        screen = screen.convert("RGB")  # 포맷 변환
+        self.disp.image(screen)  # 화면 출력
+
 
     def update_cat_position(self):
         """고양이 위치와 물고기 위치 업데이트 후 화면 새로고침"""
