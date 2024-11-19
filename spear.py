@@ -6,7 +6,7 @@ class Spear:
         self.spear_active = False  # 작살 발사 여부
         self.spear_direction = None  # 작살 방향
         self.spear_progress = 0  # 작살 진행 상태
-        self.spear_speed = 0.15  # 작살 이동 속도 (속도를 빠르게 조정)
+        self.spear_speed = 0.3  # 작살 이동 속도 (속도를 빠르게 조정)
         self.spear_length = int(self.disp.width / 3)  # 작살 최대 길이
         self.cat_width = cat_width  # 고양이 이미지의 너비 (작살 시작점 계산에 필요)
 

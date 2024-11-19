@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw, ImageFont
 import random
 import time
-from spear import Spear  # Spear 클래스 가져오기
+from spear import Spear
 
 class Game:
     def __init__(self, disp, cat_image_path, background_path, fish_image_path, oxygen_tank_path, life_image_path, treasure_chest_image_path, game_over_image_path, num_fish=6):
@@ -40,8 +40,11 @@ class Game:
         self.oxygen_time = 20
         self.last_update_time = time.time()
 
-        # Spear 객체 생성
+        # 작살 객체 생성
         self.spear = Spear(disp, self.cat_image.width)
+
+        # 작살 상태 플래그
+        self.is_spear_active = False
 
     def reset_fish_positions(self):
         """물고기 위치와 이동 방향을 초기화합니다."""
@@ -82,6 +85,9 @@ class Game:
 
     def move_cat(self, dx, dy):
         """고양이의 위치를 업데이트합니다."""
+        if self.is_spear_active:  # 작살이 발사 중이면 고양이를 움직이지 못하게 함
+            return
+
         new_x = max(0, min(self.disp.width - self.cat_image.width, self.cat_x + dx))
         new_y = max(0, min(self.disp.height - self.cat_image.height, self.cat_y + dy))
 
@@ -100,11 +106,16 @@ class Game:
 
     def fire_spear(self):
         """작살 발사"""
-        self.spear.fire(self.cat_flipped)
+        if not self.is_spear_active:  # 이미 작살이 발사 중이면 다시 발사하지 않음
+            self.is_spear_active = True
+            self.spear.fire(self.cat_flipped)
 
     def update_spear(self):
         """작살 상태 업데이트"""
-        self.spear.update()
+        if self.is_spear_active:
+            self.spear.update()
+            if not self.spear.spear_active:  # 작살이 종료되면 플래그 리셋
+                self.is_spear_active = False
 
     def display_spear(self, screen):
         """작살 그리기"""
