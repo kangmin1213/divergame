@@ -43,6 +43,7 @@ in_title_screen = True
 show_items = False
 is_first_run = True
 coin = 0  # 코인 변수 초기화
+key_purchased = False  # 열쇠 구매 상태 초기화
 
 # 이미지 경로
 title_image_path = "background_title.png"
@@ -76,7 +77,7 @@ game = Game(
 if is_first_run:
     display_title_with_button(disp, title_image_path, start_button_path)
 else:
-    display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin)
+    display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin, key_purchased)
 
 # 메인 루프
 last_fish_update = time.time()
@@ -87,12 +88,23 @@ while True:
 
     # 타이틀 화면 처리
     if in_title_screen:
-        if not button_B.value:  # B 버튼으로 게임 시작
+        # A 버튼으로 열쇠 구매
+        if not button_A.value and not key_purchased and coin >= 1000:
+            coin -= 1000  # 코인 차감
+            key_purchased = True  # 열쇠 구매 상태 설정
+            print("Key purchased!")  # 디버깅 메시지
+
+            # 타이틀 화면 업데이트
+            display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin, key_purchased)
+            time.sleep(0.5)  # 중복 입력 방지
+
+        # B 버튼으로 게임 시작
+        if not button_B.value:
             game_mode = True
             in_title_screen = False
             show_items = False
             is_first_run = False
-            game.reset_cat_position()  # 게임 시작 시 고양이 위치 초기화 (1일 추가는 이곳에서만 발생)
+            game.reset_cat_position()
             game.display_game_screen()
             time.sleep(0.5)  # 중복 입력 방지
         continue
@@ -110,7 +122,7 @@ while True:
             game.move_cat(0, 10)
 
         # 작살 발사
-        if not button_A.value:  # A 버튼으로 작살 발사
+        if not button_A.value:
             game.fire_spear()
 
         # 물고기 및 작살 업데이트
@@ -119,16 +131,16 @@ while True:
             game.update_spear()
             last_fish_update = current_time
 
-        # 코인 값 업데이트 (물고기 수 * 100)
+        # 코인 업데이트
         coin = game.caught_fish_count * 100
 
         # 산소 시간 업데이트
         result = game.update_oxygen_time()
-        if result == "title":  # 산소가 다 떨어지면 타이틀 화면으로
+        if result == "title":
             game_mode = False
             in_title_screen = True
             show_items = True
-            display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin)
+            display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin, key_purchased)
             time.sleep(0.5)
             continue
 
@@ -137,7 +149,7 @@ while True:
             game_mode = False
             in_title_screen = True
             show_items = True
-            display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin)
+            display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin, key_purchased)
             time.sleep(0.5)
             continue
 
@@ -146,4 +158,4 @@ while True:
             game.display_game_screen()
             last_screen_update = current_time
 
-    time.sleep(0.01)  # 짧은 딜레이
+    time.sleep(0.01)

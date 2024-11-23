@@ -11,36 +11,41 @@ from PIL import Image, ImageDraw, ImageFont
 
 from PIL import Image, ImageDraw, ImageFont
 
-def display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items=False, coin=0):
+def display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items=False, coin=0, key_purchased=False):
     """타이틀 화면을 표시하고, show_items가 True일 때만 코인 및 키 이미지를 상단에 표시합니다."""
     title_image = Image.open(title_image_path)
     title_image = title_image.resize((disp.width, disp.height))
     
     screen = title_image.copy()
     
-    # show_items가 True일 때만 추가 이미지와 텍스트 표시
     if show_items:
-        # Coin 이미지 좌측 상단에 배치
+        # Coin 이미지와 코인 값 표시
         coin_image = Image.open(coin_image_path).resize((20, 20))
         screen.paste(coin_image, (10, 10), coin_image)
-
-        # 코인 값 표시
         draw = ImageDraw.Draw(screen)
-        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"  # 시스템 폰트 경로
-        coin_font = ImageFont.truetype(font_path, 18)  # 코인 텍스트 폰트 크기 18
-        draw.text((40, 8), f"{coin}", font=coin_font, fill="black")  # 코인 값을 Coin 이미지 옆에 표시
+        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+        coin_font = ImageFont.truetype(font_path, 18)
+        draw.text((40, 8), f"{coin}", font=coin_font, fill="black")
 
-        # Key 이미지와 "구매" 텍스트를 왼쪽으로 이동 및 글자 크기 축소
+        # Key 이미지와 텍스트 표시
         key_image = Image.open(key_image_path).resize((20, 20))
-        key_x = disp.width - 100  # 왼쪽으로 이동
+        key_x = disp.width - 100
         key_y = 10
         screen.paste(key_image, (key_x, key_y), key_image)
 
-        key_font = ImageFont.truetype(font_path, 14)  # 열쇠 텍스트 폰트 크기 14
-        draw.text((key_x + 25, key_y + 2), "#5 buy", font=key_font, fill="black")  # 열쇠 텍스트 위치
+        # 열쇠 상태에 따라 텍스트 표시
+        key_font_size = 25 if key_purchased else 14  # 체크 표시일 때 폰트 크기를 키움
+        key_font = ImageFont.truetype(font_path, key_font_size)
+        key_text = "✔" if key_purchased else "#5 buy"  # 구매 상태에 따라 텍스트 변경
+        key_color = "green" if key_purchased else "black"  # 체크 표시일 때 초록색
+
+        # 체크 표시 위치를 살짝 위로 조정 (y 좌표를 key_y - 2로 설정)
+        key_text_y = key_y - 2 if key_purchased else key_y + 2
+        draw.text((key_x + 25, key_text_y), key_text, font=key_font, fill=key_color)
 
     # 최종 화면 출력
     disp.image(screen)
+
 
 
 
