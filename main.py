@@ -2,7 +2,7 @@ import time
 from digitalio import DigitalInOut, Direction, Pull
 import board
 from adafruit_rgb_display import st7789
-from display_utils import display_title_with_button, display_image, display_title_screen
+from display_utils import display_title_with_button, display_title_screen
 from game_logic import Game
 
 # 디스플레이 초기화 설정
@@ -29,13 +29,29 @@ backlight.switch_to_output()
 backlight.value = True
 
 # 버튼 설정
-button_A = DigitalInOut(board.D5); button_A.direction = Direction.INPUT; button_A.pull = Pull.UP
-button_B = DigitalInOut(board.D6); button_B.direction = Direction.INPUT; button_B.pull = Pull.UP
-button_L = DigitalInOut(board.D27); button_L.direction = Direction.INPUT; button_L.pull = Pull.UP
-button_R = DigitalInOut(board.D23); button_R.direction = Direction.INPUT; button_R.pull = Pull.UP
-button_U = DigitalInOut(board.D17); button_U.direction = Direction.INPUT; button_U.pull = Pull.UP
-button_D = DigitalInOut(board.D22); button_D.direction = Direction.INPUT; button_D.pull = Pull.UP
-button_C = DigitalInOut(board.D4); button_C.direction = Direction.INPUT; button_C.pull = Pull.UP
+button_A = DigitalInOut(board.D5)
+button_A.direction = Direction.INPUT
+button_A.pull = Pull.UP
+
+button_B = DigitalInOut(board.D6)
+button_B.direction = Direction.INPUT
+button_B.pull = Pull.UP
+
+button_L = DigitalInOut(board.D27)
+button_L.direction = Direction.INPUT
+button_L.pull = Pull.UP
+
+button_R = DigitalInOut(board.D23)
+button_R.direction = Direction.INPUT
+button_R.pull = Pull.UP
+
+button_U = DigitalInOut(board.D17)
+button_U.direction = Direction.INPUT
+button_U.pull = Pull.UP
+
+button_D = DigitalInOut(board.D22)
+button_D.direction = Direction.INPUT
+button_D.pull = Pull.UP
 
 # 상태 변수 초기화
 game_mode = False
@@ -44,6 +60,8 @@ show_items = False
 is_first_run = True
 coin = 0  # 코인 변수 초기화
 key_purchased = False  # 열쇠 구매 상태 초기화
+treasure_opening = False
+treasure_open_start_time = None
 
 # 이미지 경로
 title_image_path = "background_title.png"
@@ -57,7 +75,8 @@ oxygen_tank_path = "oxygen_tank.png"
 life_image_path = "life.png"
 treasure_chest_image_path = "treasure_chest.png"
 game_over_image_path = "game_over.png"
-rope_image_path = "rope.png"  # 밧줄 이미지 경로 추가
+game_clear_image_path = "game_clear.png"  # 게임 클리어 이미지 경로 추가
+rope_image_path = "rope.png"
 
 # Game 객체 생성
 game = Game(
@@ -69,8 +88,9 @@ game = Game(
     life_image_path,
     treasure_chest_image_path,
     game_over_image_path,
+    game_clear_image_path,  # 게임 클리어 이미지 경로 전달
     num_fish=6,
-    rope_image_path=rope_image_path  # rope_image_path 전달
+    rope_image_path=rope_image_path,
 )
 
 # 초기 화면 표시
@@ -112,14 +132,15 @@ while True:
     # 게임 모드 처리
     if game_mode:
         # 고양이 이동 처리
-        if not button_L.value:
-            game.move_cat(-10, 0)
-        elif not button_R.value:
-            game.move_cat(10, 0)
-        elif not button_U.value:
-            game.move_cat(0, -10)
-        elif not button_D.value:
-            game.move_cat(0, 10)
+        if not treasure_opening:
+            if not button_L.value:
+                game.move_cat(-10, 0)
+            elif not button_R.value:
+                game.move_cat(10, 0)
+            elif not button_U.value:
+                game.move_cat(0, -10)
+            elif not button_D.value:
+                game.move_cat(0, 10)
 
         # 작살 발사
         if not button_A.value:
@@ -133,6 +154,20 @@ while True:
 
         # 코인 업데이트
         coin = game.caught_fish_count * 100
+
+        # 보물상자 열기 트리거
+        if not button_B.value and game.is_near_treasure() and key_purchased and not treasure_opening:
+            treasure_opening = True
+            treasure_open_start_time = current_time
+            print("Starting to open treasure...")  # 터미널에 보물상자 열기 시작 메시지 출력
+
+        # 보물상자 열기 처리
+        if treasure_opening:
+            elapsed_time = current_time - treasure_open_start_time
+            print(f"Opening treasure... {elapsed_time:.1f}/3.0 seconds elapsed")  # 열리는 중 상태 표시
+            if elapsed_time >= 3:
+                print("Treasure opened! Game cleared!")  # 보물상자가 열렸음을 터미널에 출력
+                game.display_game_clear_screen()  # 게임 클리어 화면 표시 및 종료
 
         # 산소 시간 업데이트
         result = game.update_oxygen_time()

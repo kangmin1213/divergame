@@ -3,8 +3,9 @@ import random
 import time
 from spear import Spear
 
+
 class Game:
-    def __init__(self, disp, cat_image_path, background_path, fish_image_path, oxygen_tank_path, life_image_path, treasure_chest_image_path, game_over_image_path, rope_image_path=None, num_fish=6):
+    def __init__(self, disp, cat_image_path, background_path, fish_image_path, oxygen_tank_path, life_image_path, treasure_chest_image_path, game_over_image_path, game_clear_image_path, rope_image_path=None, num_fish=6):
         self.disp = disp
         self.cat_image_original = Image.open(cat_image_path).resize((50, 50))
         self.cat_image_flipped = self.cat_image_original.transpose(Image.FLIP_LEFT_RIGHT)
@@ -26,6 +27,7 @@ class Game:
         self.oxygen_tank = Image.open(oxygen_tank_path).resize((20, 20))
         self.life_image = Image.open(life_image_path).resize((20, 20))
         self.game_over_image = Image.open(game_over_image_path).resize((self.disp.width, self.disp.height))
+        self.game_clear_image_path = game_clear_image_path  # 게임 클리어 이미지 경로 추가
         self.lives = 2  # 초기 생명 설정
 
         # 고양이 및 산소 시간 초기화
@@ -41,13 +43,14 @@ class Game:
         self.last_update_time = time.time()
 
         # 잡은 물고기 수 초기화
-        self.caught_fish_count = 0  # 여기 추가
+        self.caught_fish_count = 0
 
         # 작살 객체 생성
         self.spear = Spear(disp, self.cat_image.width, rope_image_path)
 
         # 작살 상태 플래그
         self.is_spear_active = False
+
 
 
     def reset_fish_positions(self):
@@ -261,8 +264,34 @@ class Game:
 
             self.fish_positions[i] = (x, y)
 
+    def is_near_treasure(self):
+        """고양이가 보물상자 근처에 있는지 확인"""
+        cat_center_x = self.cat_x + self.cat_image.width // 2
+        cat_center_y = self.cat_y + self.cat_image.height // 2
+        treasure_center_x = self.treasure_chest_x + self.treasure_chest_image.width // 2
+        treasure_center_y = self.treasure_chest_y + self.treasure_chest_image.height // 2
+
+        # 고양이와 보물상자의 중심 거리가 특정 거리 이하이면 근처로 간주
+        distance = ((cat_center_x - treasure_center_x) ** 2 + (cat_center_y - treasure_center_y) ** 2) ** 0.5
+        return distance < 30  # 거리 기준은 30 픽셀
+
+    def display_game_clear_screen(self):
+        """게임 클리어 화면 표시"""
+        game_clear_image = Image.open(self.game_clear_image_path).resize((self.disp.width, self.disp.height))
+        self.disp.image(game_clear_image)
+
+
     def game_over(self):
         """게임 오버 시 game_over.png를 화면에 표시하고 종료"""
         self.disp.image(self.game_over_image)
         while True:
             time.sleep(0.1)
+    
+    def display_game_clear_screen(self):
+        """게임 클리어 화면을 표시하고 프로그램 종료"""
+        game_clear_image = Image.open(self.game_clear_image_path).resize((self.disp.width, self.disp.height))
+        self.disp.image(game_clear_image)
+        print("Game cleared! Exiting game...")  # 터미널에 메시지 출력
+        time.sleep(3)  # 3초간 화면 유지
+        exit()  # 프로그램 종료 
+
