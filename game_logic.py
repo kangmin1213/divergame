@@ -40,11 +40,15 @@ class Game:
         self.oxygen_time = 20
         self.last_update_time = time.time()
 
+        # 잡은 물고기 수 초기화
+        self.caught_fish_count = 0  # 여기 추가
+
         # 작살 객체 생성
-        self.spear = Spear(disp, self.cat_image.width, rope_image_path)  # rope_image_path 전달
+        self.spear = Spear(disp, self.cat_image.width, rope_image_path)
 
         # 작살 상태 플래그
         self.is_spear_active = False
+
 
     def reset_fish_positions(self):
         """물고기 위치와 이동 방향을 초기화합니다."""
@@ -85,7 +89,8 @@ class Game:
 
     def move_cat(self, dx, dy):
         """고양이의 위치를 업데이트합니다."""
-        if self.is_spear_active:  # 작살이 발사 중이면 고양이를 움직이지 못하게 함
+        if self.is_spear_active:  # 작살이 발사 중이면 이동 금지
+            print("Cannot move while spear is active!")  # 디버깅용 메시지
             return
 
         new_x = max(0, min(self.disp.width - self.cat_image.width, self.cat_x + dx))
@@ -104,18 +109,71 @@ class Game:
             self.cat_flipped = False
             self.needs_update = True
 
-    def fire_spear(self):
-        """작살 발사"""
-        if not self.is_spear_active:  # 이미 작살이 발사 중이면 다시 발사하지 않음
-            self.is_spear_active = True
-            self.spear.fire(self.cat_flipped)
 
     def update_spear(self):
-        """작살 상태 업데이트"""
-        if self.is_spear_active:
+        if self.spear.spear_active:
             self.spear.update()
-            if not self.spear.spear_active:  # 작살이 종료되면 플래그 리셋
+
+            # 작살이 완료되면 활성화 상태를 해제
+            if not self.spear.spear_active:  # 작살 동작이 완료되었는지 확인
                 self.is_spear_active = False
+
+            # 작살 진행 중일 때 충돌 확인
+            if self.spear.spear_active and self.spear.spear_progress < 1:
+                hit_fish_index = self.check_spear_collision()
+                if hit_fish_index is not None:  # 물고기와 충돌했을 때
+                    self.spear.spear_active = False  # 작살 멈춤
+                    self.fish_positions.pop(hit_fish_index)  # 물고기 삭제
+                    self.caught_fish_count += 1  # 잡은 물고기 수 증가
+
+
+    def check_spear_collision(self):
+        """작살과 물고기의 충돌 여부를 확인"""
+        spear_x, spear_y = self.spear.get_tip_position(self.cat_x, self.cat_y)
+        for i, (fish_x, fish_y) in enumerate(self.fish_positions):
+            fish_width = self.fish_images[0].width
+            fish_height = self.fish_images[0].height
+
+            # 충돌 여부 확인 (작살의 끝부분과 물고기의 사각형 영역)
+            if (fish_x <= spear_x <= fish_x + fish_width and
+                fish_y <= spear_y <= fish_y + fish_height):
+                print(f"Collision detected with fish at index {i}")  # 디버깅용 메시지
+                return i  # 충돌한 물고기의 인덱스 반환
+        return None
+
+
+    def fire_spear(self):
+        """작살 발사"""
+        if not self.is_spear_active:  # 작살이 발사 중이 아닐 때만 발사 가능
+            self.is_spear_active = True
+            self.spear.fire(self.cat_flipped)
+            print("Spear fired!")  # 디버깅용 메시지
+
+
+    def update_spear(self):
+        """작살 상태 업데이트 및 물고기와의 충돌 처리"""
+        if self.spear.spear_active:
+            self.spear.update()
+
+            # 작살이 완료되면 활성화 상태를 해제
+            if not self.spear.spear_active:  # 작살 동작이 완료되었는지 확인
+                self.is_spear_active = False
+                print("Spear deactivated.")  # 디버깅용 메시지
+
+            # 작살 진행 중일 때 충돌 확인
+            if self.spear.spear_active and self.spear.spear_progress < 1:
+                hit_fish_index = self.check_spear_collision()
+                if hit_fish_index is not None:  # 물고기와 충돌했을 때
+                    self.spear.spear_active = False  # 작살 멈춤
+                    self.is_spear_active = False  # 게임 작살 상태도 초기화
+                    print(f"Fish caught at index {hit_fish_index}")  # 디버깅용 메시지
+
+                    # 물고기 제거 및 잡은 물고기 수 증가
+                    self.fish_positions.pop(hit_fish_index)  # 물고기 삭제
+                    self.caught_fish_count += 1  # 잡은 물고기 수 증가
+                    print(f"Fish caught! Total: {self.caught_fish_count}")  # 디버깅용 메시지
+
+
 
     def display_spear(self, screen):
         """작살 그리기"""
