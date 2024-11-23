@@ -4,7 +4,7 @@ import time
 from spear import Spear
 
 class Game:
-    def __init__(self, disp, cat_image_path, background_path, fish_image_path, oxygen_tank_path, life_image_path, treasure_chest_image_path, game_over_image_path, num_fish=6):
+    def __init__(self, disp, cat_image_path, background_path, fish_image_path, oxygen_tank_path, life_image_path, treasure_chest_image_path, game_over_image_path, rope_image_path=None, num_fish=6):
         self.disp = disp
         self.cat_image_original = Image.open(cat_image_path).resize((50, 50))
         self.cat_image_flipped = self.cat_image_original.transpose(Image.FLIP_LEFT_RIGHT)
@@ -41,7 +41,7 @@ class Game:
         self.last_update_time = time.time()
 
         # 작살 객체 생성
-        self.spear = Spear(disp, self.cat_image.width)
+        self.spear = Spear(disp, self.cat_image.width, rope_image_path)  # rope_image_path 전달
 
         # 작살 상태 플래그
         self.is_spear_active = False

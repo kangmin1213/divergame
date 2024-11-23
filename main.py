@@ -55,6 +55,7 @@ oxygen_tank_path = "oxygen_tank.png"
 life_image_path = "life.png"
 treasure_chest_image_path = "treasure_chest.png"
 game_over_image_path = "game_over.png"
+rope_image_path = "rope.png"  # 밧줄 이미지 경로 추가
 
 # Game 객체 생성
 game = Game(
@@ -66,7 +67,8 @@ game = Game(
     life_image_path,
     treasure_chest_image_path,
     game_over_image_path,
-    num_fish=6
+    num_fish=6,
+    rope_image_path=rope_image_path  # rope_image_path 전달
 )
 
 # 초기 화면 표시
