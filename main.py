@@ -42,6 +42,7 @@ game_mode = False
 in_title_screen = True
 show_items = False
 is_first_run = True
+coin = 0  # 코인 변수 초기화
 
 # 이미지 경로
 title_image_path = "background_title.png"
@@ -75,7 +76,7 @@ game = Game(
 if is_first_run:
     display_title_with_button(disp, title_image_path, start_button_path)
 else:
-    display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items)
+    display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin)
 
 # 메인 루프
 last_fish_update = time.time()
@@ -118,13 +119,16 @@ while True:
             game.update_spear()
             last_fish_update = current_time
 
+        # 코인 값 업데이트 (물고기 수 * 100)
+        coin = game.caught_fish_count * 100
+
         # 산소 시간 업데이트
         result = game.update_oxygen_time()
         if result == "title":  # 산소가 다 떨어지면 타이틀 화면으로
             game_mode = False
             in_title_screen = True
             show_items = True
-            display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items)
+            display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin)
             time.sleep(0.5)
             continue
 
@@ -133,7 +137,7 @@ while True:
             game_mode = False
             in_title_screen = True
             show_items = True
-            display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items)
+            display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items, coin)
             time.sleep(0.5)
             continue
 

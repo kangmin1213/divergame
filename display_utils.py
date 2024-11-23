@@ -7,7 +7,11 @@ def display_image(disp, image_path):
     image = image.resize((disp.width, disp.height))
     disp.image(image)
 
-def display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items=False):
+from PIL import Image, ImageDraw, ImageFont
+
+from PIL import Image, ImageDraw, ImageFont
+
+def display_title_screen(disp, title_image_path, coin_image_path, key_image_path, show_items=False, coin=0):
     """타이틀 화면을 표시하고, show_items가 True일 때만 코인 및 키 이미지를 상단에 표시합니다."""
     title_image = Image.open(title_image_path)
     title_image = title_image.resize((disp.width, disp.height))
@@ -20,17 +24,25 @@ def display_title_screen(disp, title_image_path, coin_image_path, key_image_path
         coin_image = Image.open(coin_image_path).resize((20, 20))
         screen.paste(coin_image, (10, 10), coin_image)
 
-        # Key 이미지와 "구매" 텍스트 우측 상단에 배치
-        key_image = Image.open(key_image_path).resize((20, 20))
-        screen.paste(key_image, (disp.width - 60, 10), key_image)
-
-        # "구매" 텍스트 표시
+        # 코인 값 표시
         draw = ImageDraw.Draw(screen)
-        font = ImageFont.load_default()
-        draw.text((disp.width - 35, 12), "#5 buy", font=font, fill="black")
+        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"  # 시스템 폰트 경로
+        coin_font = ImageFont.truetype(font_path, 18)  # 코인 텍스트 폰트 크기 18
+        draw.text((40, 8), f"{coin}", font=coin_font, fill="black")  # 코인 값을 Coin 이미지 옆에 표시
+
+        # Key 이미지와 "구매" 텍스트를 왼쪽으로 이동 및 글자 크기 축소
+        key_image = Image.open(key_image_path).resize((20, 20))
+        key_x = disp.width - 100  # 왼쪽으로 이동
+        key_y = 10
+        screen.paste(key_image, (key_x, key_y), key_image)
+
+        key_font = ImageFont.truetype(font_path, 14)  # 열쇠 텍스트 폰트 크기 14
+        draw.text((key_x + 25, key_y + 2), "#5 buy", font=key_font, fill="black")  # 열쇠 텍스트 위치
 
     # 최종 화면 출력
     disp.image(screen)
+
+
 
 def display_title_with_button(disp, title_image_path, start_button_path):
     """타이틀 화면 중앙에 1/3 크기의 'Start Game' 버튼을 추가하여 표시합니다."""

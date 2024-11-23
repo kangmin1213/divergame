@@ -202,11 +202,18 @@ class Game:
     def display_day_and_oxygen(self, screen):
         """왼쪽 상단에 'Day - 숫자'와 산소 카운트 표시"""
         draw = ImageDraw.Draw(screen)
+        
+        # 'Day - 숫자' 텍스트 표시
         day_text = f"Day - {self.day}"
-        oxygen_text = f"{self.oxygen_time}s"
-        draw.text((10, 5), day_text, font=self.font, fill="black")
+        draw.text((10, 5), day_text, font=self.font, fill="black")  # 기존 폰트 크기 사용
+
+        # 산소 카운트 텍스트를 약간 작은 크기로 설정
+        oxygen_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 14)  # 크기 14로 설정
         screen.paste(self.oxygen_tank, (10, 30), self.oxygen_tank)
-        draw.text((35, 32), oxygen_text, font=self.small_font, fill="red")
+        oxygen_text = f"{self.oxygen_time}s"
+        draw.text((35, 32), oxygen_text, font=oxygen_font, fill="red")  # 작은 폰트 사용
+
+
 
     def display_lives(self, screen):
         """오른쪽 상단에 남은 life 이미지를 표시"""
