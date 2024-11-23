@@ -7,7 +7,7 @@ class Spear:
         self.spear_direction = None  # 작살 방향
         self.spear_progress = 0  # 작살 진행 상태
         self.spear_speed = 0.2  # 작살 이동 속도
-        self.spear_length = int(self.disp.width / 2)  # 작살 최대 길이
+        self.spear_length = int(self.disp.width / 3)  # 작살 최대 길이
         self.cat_width = cat_width  # 고양이 이미지의 너비
         self.rope_image = Image.open(rope_image_path).resize((self.spear_length, 10))  # 밧줄 이미지
 
