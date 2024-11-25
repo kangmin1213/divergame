@@ -131,6 +131,11 @@ while True:
 
     # 게임 모드 처리
     if game_mode:
+
+        # DAY-5 종료 시 게임오버 조건 확인
+        if game.check_game_over_due_to_day():
+            break  # 게임 오버 조건 만족 시 게임 종료
+
         # 고양이 이동 처리
         if not treasure_opening:
             if not button_L.value:
@@ -164,10 +169,12 @@ while True:
         # 보물상자 열기 처리
         if treasure_opening:
             elapsed_time = current_time - treasure_open_start_time
-            print(f"Opening treasure... {elapsed_time:.1f}/3.0 seconds elapsed")  # 열리는 중 상태 표시
+            print(f"Opening treasure... {elapsed_time:.1f}/3.0 seconds elapsed")
             if elapsed_time >= 3:
-                print("Treasure opened! Game cleared!")  # 보물상자가 열렸음을 터미널에 출력
-                game.display_game_clear_screen()  # 게임 클리어 화면 표시 및 종료
+                print("Treasure opened! Game cleared!")
+                game.treasure_opened = True  # 보물상자가 열렸음을 기록
+                game.display_game_clear_screen()  # 게임 클리어 화면 표시
+                break  # 게임 클리어 후 종료
 
         # 산소 시간 업데이트
         result = game.update_oxygen_time()

@@ -5,12 +5,17 @@ from spear import Spear
 
 
 class Game:
-    def __init__(self, disp, cat_image_path, background_path, fish_image_path, oxygen_tank_path, life_image_path, treasure_chest_image_path, game_over_image_path, game_clear_image_path, rope_image_path=None, num_fish=6):
+    def __init__(self, disp, cat_image_path, background_path, fish_image_path, oxygen_tank_path, life_image_path, treasure_chest_image_path, game_over_image_path, game_clear_image_path, num_fish=6, rope_image_path=None):
         self.disp = disp
         self.cat_image_original = Image.open(cat_image_path).resize((50, 50))
+        self.background = Image.open(background_path).resize((disp.width, disp.height))
+        self.game_clear_image_path = game_clear_image_path  # 게임 클리어 이미지 경로 추가
         self.cat_image_flipped = self.cat_image_original.transpose(Image.FLIP_LEFT_RIGHT)
         self.cat_image = self.cat_image_original
-        self.background = Image.open(background_path).resize((disp.width, disp.height))
+        
+        # 보물상자 상태 초기화
+        self.treasure_opened = False  # 보물상자 열림 여부 추가
+
 
         # 물고기 이미지 및 이동 설정
         fish_size = (self.cat_image.width // 2, self.cat_image.height // 2)
@@ -86,9 +91,12 @@ class Game:
         self.needs_update = True
         if self.day < self.max_day:
             self.day += 1
+            print(f"DAY-{self.day} started!")  # 디버깅 메시지 추가
+            self.check_game_over_due_to_day()  # DAY 증가 후 즉시 게임 오버 조건 확인
         self.oxygen_time = 20
         self.last_update_time = time.time()
         self.reset_fish_positions()
+
 
     def move_cat(self, dx, dy):
         """고양이의 위치를 업데이트합니다."""
@@ -287,11 +295,21 @@ class Game:
         while True:
             time.sleep(0.1)
     
-    def display_game_clear_screen(self):
-        """게임 클리어 화면을 표시하고 프로그램 종료"""
-        game_clear_image = Image.open(self.game_clear_image_path).resize((self.disp.width, self.disp.height))
-        self.disp.image(game_clear_image)
-        print("Game cleared! Exiting game...")  # 터미널에 메시지 출력
-        time.sleep(3)  # 3초간 화면 유지
-        exit()  # 프로그램 종료 
+    def display_game_over_screen(self):
+        """게임오버 화면 표시"""
+        if self.game_over_image:
+            self.disp.image(self.game_over_image)  # 게임오버 이미지를 디스플레이에 표시
+        print("Game Over: Failed to open the treasure by DAY-5.")  # 터미널에 메시지 출력
+        #time.sleep(3)  # 3초 대기
+        exit()  # 게임 종료
+
+
+
+    def check_game_over_due_to_day(self):
+        """DAY-5가 끝났고 보물상자를 열지 못했으면 게임오버"""
+        if self.day > 5 and not self.treasure_opened:
+            print("Game over: Failed to open the treasure by DAY-5.")  # 터미널에 메시지 출력
+            self.display_game_over_screen()  # 게임오버 화면 표시
+            exit()  # 게임 종료
+
 
