@@ -222,8 +222,6 @@ class Game:
 
 
 
-
-
     def display_day_and_oxygen(self, screen):
         """왼쪽 상단에 'Day - 숫자'와 산소 카운트 표시"""
         draw = ImageDraw.Draw(screen)

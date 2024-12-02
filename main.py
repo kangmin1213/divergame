@@ -170,8 +170,8 @@ while True:
         # 보물상자 열기 처리
         if treasure_opening:
             elapsed_time = current_time - treasure_open_start_time
-            print(f"Opening treasure... {elapsed_time:.1f}/3.0 seconds elapsed")
-            if elapsed_time >= 3:
+            print(f"Opening treasure... {elapsed_time:.1f}/1.0 seconds elapsed")
+            if elapsed_time >= 1:
                 print("Treasure opened! Game cleared!")
                 game.treasure_opened = True  # 보물상자가 열렸음을 기록
                 game.display_game_clear_screen()  # 게임 클리어 화면 표시
