@@ -177,9 +177,10 @@ while True:
                 game.display_game_clear_screen()  # 게임 클리어 화면 표시
                 break  # 게임 클리어 후 종료
 
-        # 산소 시간 업데이트
+        # 산소 부족 시 상태 처리
         result = game.update_oxygen_time()
-        if result == "title":
+        if result == "title":  # 산소 부족으로 하트를 잃었을 때
+            game.reset_cat_position()  # 고양이 위치 초기화
             game_mode = False
             in_title_screen = True
             show_items = True
@@ -187,8 +188,11 @@ while True:
             time.sleep(0.5)
             continue
 
-        # 고양이가 최상단에 도달하면 타이틀 화면으로
+
+        # 고양이가 최상단에 도달한 경우
         if game.cat_reached_top():
+            game.update_day()  # 날짜 증가
+            game.reset_cat_position()
             game_mode = False
             in_title_screen = True
             show_items = True

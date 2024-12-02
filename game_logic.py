@@ -40,7 +40,7 @@ class Game:
         self.cat_y = (disp.height - self.cat_image.height) // 2
         self.cat_flipped = False
         self.needs_update = True
-        self.day = 0
+        self.day = 1
         self.max_day = 7
         self.font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16)
         self.small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 10)
@@ -84,19 +84,24 @@ class Game:
         
         return positions
 
-    def reset_cat_position(self, offset=20):
-        """고양이를 화면 상단에서 약간 떨어진 위치로 초기화하고 Day를 증가시킵니다."""
+    def reset_cat_position(self, offset=None):
+        """고양이를 화면 상단에서 약간 떨어진 위치로 초기화합니다."""
+        if offset is None:
+            offset = self.disp.height // 5  # 화면 높이의 20% 지점
         self.cat_x = (self.disp.width - self.cat_image.width) // 2
         self.cat_y = offset
         self.needs_update = True
-        if self.day < self.max_day:
-            self.day += 1
-            print(f"DAY-{self.day} started!")  # 디버깅 메시지 추가
-            self.check_game_over_due_to_day()  # DAY 증가 후 즉시 게임 오버 조건 확인
         self.oxygen_time = 20
         self.last_update_time = time.time()
         self.reset_fish_positions()
 
+
+    def update_day(self):
+        """날짜를 증가시키고 게임 오버 조건 확인"""
+        if self.day < self.max_day:
+            self.day += 1
+            print(f"DAY-{self.day} started!")  # 디버깅 메시지
+            self.check_game_over_due_to_day()
 
     def move_cat(self, dx, dy):
         """고양이의 위치를 업데이트합니다."""
@@ -195,20 +200,29 @@ class Game:
         return self.cat_y <= 0
 
     def update_oxygen_time(self):
-        """산소 시간을 카운트 다운하고, 0이 되면 생명 감소 처리 후 타이틀 화면으로 전환"""
+        """산소 시간을 카운트 다운하고, 0이 되면 생명 감소 처리 및 날짜 증가."""
         current_time = time.time()
         if current_time - self.last_update_time >= 1:
             self.oxygen_time -= 1
             self.last_update_time = current_time
             self.needs_update = True
 
-            if self.oxygen_time <= 0:
+            if self.oxygen_time <= 0:  # 산소가 0이 되면 하트 감소
                 self.lives -= 1
+                print(f"Lives left: {self.lives}")
+                self.update_day()  # 날짜 증가
+
+                # 산소 초기화
                 self.oxygen_time = 20
-                if self.lives <= 0:
-                    self.game_over()
+
+                if self.lives > 0:
+                    return "title"  # 타이틀 화면으로 돌아감
                 else:
-                    return "title"
+                    self.game_over()  # 게임 오버
+
+
+
+
 
     def display_day_and_oxygen(self, screen):
         """왼쪽 상단에 'Day - 숫자'와 산소 카운트 표시"""

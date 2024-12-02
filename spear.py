@@ -66,3 +66,4 @@ class Spear:
         elif self.spear_direction == "right":
             tip_x = spear_x + int(self.spear_length * progress)
         return tip_x, spear_y
+    
