@@ -131,10 +131,11 @@ while True:
 
     # 게임 모드 처리
     if game_mode:
-
-        # DAY-5 종료 시 게임오버 조건 확인
-        if game.check_game_over_due_to_day():
-            break  # 게임 오버 조건 만족 시 게임 종료
+        # DAY-5 종료 시 즉시 게임오버 조건 확인
+        if game.day > 5 and not game.treasure_opened:
+            print("Game Over: Failed to open the treasure by DAY-5.")  # 디버깅 메시지
+            game.display_game_over_screen()  # 게임 오버 화면 표시
+            break  # 게임 루프 종료
 
         # 고양이 이동 처리
         if not treasure_opening:
